@@ -1,0 +1,26 @@
+{
+  "name": "voting-contracts",
+  "version": "0.1.0",
+  "author": "project-democracy",
+  "license": "MPL-2.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./scripts/test.sh",
+    "compile:contracts": "./node_modules/.bin/truffle compile"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "ethereumjs-util": "^6.0.0",
+    "ganache-cli": "^6.4.1",
+    "truffle": "^5.0.7"
+  },
+  "dependencies": {
+    "ethers": "^4.0.13",
+    "openzeppelin-solidity": "=2.1.1"
+  }
+}
