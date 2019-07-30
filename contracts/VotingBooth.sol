@@ -13,8 +13,8 @@ contract VotingBooth {
   address constant VOICE_CREDITS = 0x1231111111111111111111111111111111111123;
   address constant VOTES = 0x2341111111111111111111111111111111111234;
   address constant BALLOT_CARDS = 0x3451111111111111111111111111111111111345;
-  address constant YES_BALLOT = 0x4561111111111111111111111111111111111456;
-  address constant NO_BALLOT = 0x5671111111111111111111111111111111111567;
+  address constant YES_BOX = 0x4561111111111111111111111111111111111456;
+  address constant NO_BOX = 0x5671111111111111111111111111111111111567;
   uint256 constant MOTION = 123;
   uint256 constant CREDIT_DECIMALS = 1000000000000000000;
 
@@ -41,10 +41,10 @@ contract VotingBooth {
     address destinationBallet;
     if (placedVotes < 0) {
       require(newVotes < placedVotes, "can not decrease no vote");
-      destinationBallet = NO_BALLOT;
+      destinationBallet = NO_BOX;
     } else {
       require(newVotes > placedVotes, "can not decrease yes vote");
-      destinationBallet = YES_BALLOT;
+      destinationBallet = YES_BOX;
     }
     uint256 diffCredits = uint256((newVotes * newVotes) - (placedVotes * placedVotes)) / CREDIT_DECIMALS;
 

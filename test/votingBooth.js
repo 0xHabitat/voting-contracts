@@ -21,8 +21,8 @@ function replaceAll(str, find, replace) {
 
 contract('Voting Booth', (accounts) => {
   const voter = accounts[1];
-  const yesBox = accounts[2];
-  const noBox = accounts[3];
+  const YES_BOX = accounts[2];
+  const NO_BOX = accounts[3];
   const voterPriv = '0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201';
   const dataBefore = '0x0000000000000000000000000000000000000000000000000000000000000000';
   const ballotCardId = 123;
@@ -52,8 +52,8 @@ contract('Voting Booth', (accounts) => {
     tmp = replaceAll(tmp, '1231111111111111111111111111111111111123', voiceCredits.address);
     tmp = replaceAll(tmp, '2341111111111111111111111111111111111234', votes.address);
     tmp = replaceAll(tmp, '3451111111111111111111111111111111111345', ballotCards.address);
-    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', yesBox);
-    tmp = replaceAll(tmp, '5671111111111111111111111111111111111567', noBox);
+    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', YES_BOX);
+    tmp = replaceAll(tmp, '5671111111111111111111111111111111111567', NO_BOX);
     VotingBooth._json.bytecode = tmp;
     const voteContract = await VotingBooth.new();
 
