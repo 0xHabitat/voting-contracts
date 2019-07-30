@@ -12,56 +12,62 @@ contract VotingBooth {
 
   address constant VOICE_CREDITS = 0x1231111111111111111111111111111111111123;
   address constant VOTES = 0x2341111111111111111111111111111111111234;
-  // CO2 flows from Earth to Air and maybe back. This is the address of the
-  // air contract.
-  address constant BALLOT_CARDS = 0x4561111111111111111111111111111111111456;
+  address constant BALLOT_CARDS = 0x3451111111111111111111111111111111111345;
+  address constant YES_BALLOT = 0x4561111111111111111111111111111111111456;
+  address constant NO_BALLOT = 0x5671111111111111111111111111111111111567;
+  uint256 constant MOTION = 123;
+  uint256 constant CREDIT_DECIMALS = 1000000000000000000;
 
+  function abs(int256 val) internal pure returns (uint256) {
+    if (val < 0) {
+      return uint256(val * -1);
+    } else {
+      return uint256(val);
+    }
+  }
   
-  function cast(
-    uint256 passportA,
-    bytes32 passDataAfter, 
-    bytes memory sigA,
-    uint256 passportB,
-    address countryAaddr,
-    address countryBaddr
+  function castBallot(
+    uint256 ballotCardId,
+    bytes32[] memory proof,
+    int256 newVotes
   ) public {
-    // calculate payout for A
-    // sender can up to a bound decide the size of the emission
-    IERC1948 countryA = IERC1948(countryAaddr);
-    uint256 emission = (uint256(uint32(uint256(passDataAfter))) - uint256(uint32(uint256(countryA.readData(passportA))))) * PASSPORT_FACTOR;
-    require(emission <= MAX_CO2_EMISSION, "invalid emission");
 
-    // pay out trade        
-    IERC20 dai = IERC20(DAI);
-    dai.transfer(countryA.ownerOf(passportA), MAX_GOE_PAYOUT * emission / MAX_CO2_EMISSION);
-    IERC1948 countryB = IERC1948(countryBaddr);
-    dai.transfer(countryB.ownerOf(passportB), MAX_GOE_PAYOUT * emission / MAX_CO2_EMISSION);
+    // read previous votes
+    IERC1948 ballotCards = IERC1948(BALLOT_CARDS);
+    bytes32 root = ballotCards.readData(ballotCardId);
+    // TODO: verify proof
+    // get votes at position
+    int256 placedVotes = int256(proof[0]);
+    address destinationBallet;
+    if (placedVotes < 0) {
+      require(newVotes < placedVotes, "can not decrease no vote");
+      destinationBallet = NO_BALLOT;
+    } else {
+      require(newVotes > placedVotes, "can not decrease yes vote");
+      destinationBallet = YES_BALLOT;
+    }
+    uint256 diffCredits = uint256((newVotes * newVotes) - (placedVotes * placedVotes)) / CREDIT_DECIMALS;
+
+    // transfer credits
+    IERC20 credits = IERC20(VOICE_CREDITS);
+    credits.transferFrom(ballotCards.ownerOf(ballotCardId), destinationBallet, diffCredits);
+    // transfer votes
+    IERC20 votes = IERC20(VOTES);
+    votes.transfer(destinationBallet, abs(newVotes - placedVotes));
     
-    // update passports
-    countryA.writeDataByReceipt(passportA, passDataAfter, sigA);
-    bytes32 dataB = countryB.readData(passportB);
-    countryB.writeData(passportB, bytes32(uint256(dataB) + uint256(emission / PASSPORT_FACTOR)));
-
-    // // emit CO2
-    IERC20 co2 = IERC20(CO2);
-    co2.transfer(AIR_ADDR, emission * 2);
+    // update ballotCard
+    // TODO: calculate new root
+    ballotCards.writeData(ballotCardId, root);
   }
 
-  // account used as game master.
-  address constant GAME_MASTER = 0x5671111111111111111111111111111111111567;
-
-  // used to model natural increase of CO2 if above run-away point.
-  function unlockCO2(uint256 amount, uint8 v, bytes32 r, bytes32 s) public {
-    require(ecrecover(bytes32(uint256(uint160(address(this))) | amount << 160), v, r, s) == GAME_MASTER, "signer does not match");
-    // unlock CO2
-    IERC20(CO2).transfer(AIR_ADDR, amount);
-  }
+  // account used for consolidates.
+  address constant OPERATOR = 0x5671111111111111111111111111111111111567;
 
   // used to combine multiple contract UTXOs into one.
   function consolidate(uint8 v, bytes32 r, bytes32 s) public {
-    require(ecrecover(bytes32(bytes20(address(this))), v, r, s) == GAME_MASTER, "signer does not match");
-    // lock CO2
-    IERC20 co2 = IERC20(CO2);
-    co2.transfer(address(this), co2.balanceOf(address(this)));
+    require(ecrecover(bytes32(bytes20(address(this))), v, r, s) == OPERATOR, "signer does not match");
+
+    IERC20 votes = IERC20(VOTES);
+    votes.transfer(address(this), votes.balanceOf(address(this)));
   }
 }
