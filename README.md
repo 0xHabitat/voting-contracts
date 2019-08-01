@@ -8,3 +8,7 @@ the contract side of things.
 yarn
 yarn test
 ```
+
+## Token Flow
+
+![Token Flow](tokenFlow.png)
