@@ -9,7 +9,8 @@ const keccak256 = require('ethereumjs-util').keccak256;
 
 const JSBI = require('jsbi');
 
-
+const zero = '0x95d22ccdd977e992e4a530ce4f1304e1a7a1840823ea1b4f7bf3841049d197e0';
+const ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000';
 const one = JSBI.BigInt(1);
 const two = JSBI.BigInt(2);
 const merkelize = (hash1, hash2) => {
@@ -38,7 +39,7 @@ function setdefaultNodes(depth) {
   const defaultNodes = new Array(depth + 1);
   defaultNodes[0] = Buffer.alloc(32, 0);//keccak256(Buffer.alloc(32, 0));
   for (let i = 1; i < depth + 1; i++) {
-    defaultNodes[i] = merkelize(defaultNodes[i-1], defaultNodes[i-1]);
+    defaultNodes[i] = Buffer.alloc(32, 0);//merkelize(defaultNodes[i-1], defaultNodes[i-1]);
   }
   return defaultNodes;
 }
@@ -59,11 +60,19 @@ function createTree(orderedLeaves, depth, defaultNodes) {
         value = treeLevel[index];
         if (JSBI.__absoluteModSmall(JSBI.BigInt(index, 10), two) === 0) { // eslint-disable-line no-underscore-dangle
           const coIndex = JSBI.add(JSBI.BigInt(index, 10), one).toString();
-          nextLevel[halfIndex] = merkelize(value, treeLevel[coIndex] || defaultNodes[level]);
+          if (value == ZERO && !treeLevel[coIndex]) {
+            nextLevel[halfIndex] = ZERO;
+          } else {
+            nextLevel[halfIndex] = merkelize(value, treeLevel[coIndex] || defaultNodes[level]);
+          }
         } else {
           const coIndex = JSBI.subtract(JSBI.BigInt(index, 10), one).toString();
           if (treeLevel[coIndex] === undefined) {
-            nextLevel[halfIndex] = merkelize(defaultNodes[level], value);
+            if (value == ZERO) {
+              nextLevel[halfIndex] = ZERO;
+            } else {
+              nextLevel[halfIndex] = merkelize(defaultNodes[level], value);
+            }
           }
         }
       }

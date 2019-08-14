@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-present, Project Democracy
+ * Copyright (c) 2018-present, Leap DAO (leapdao.org)
  *
  * This source code is licensed under the Mozilla Public License, version 2,
  * found in the LICENSE file in the root directory of this source tree.
@@ -12,17 +12,7 @@ pragma solidity >=0.4.21 <0.6.0;
 contract SparseMerkleTree {
 
   uint8 constant DEPTH = 9;
-  bytes32[DEPTH + 1] public defaultHashes;
   bytes32 public root;
-
-  constructor() public {
-    // defaultHash[0] is being set to keccak256(uint256(0));
-    //defaultHashes[0] = 0x290decd9548b62a8d60345a988386fc84ba6bc95484008f6362f93160ef3e563;
-    for (uint8 i = 1; i <= DEPTH; i ++) {
-      defaultHashes[i] = keccak256(abi.encodePacked(defaultHashes[i-1], defaultHashes[i-1]));
-    }
-    root = defaultHashes[DEPTH];
-  }
 
   function read(uint16 key, bytes32 leaf, bytes memory proof) public view returns (bool) {
     bytes32 calculatedRoot = getRoot(leaf, key, proof);
@@ -38,7 +28,7 @@ contract SparseMerkleTree {
   function del(uint16 key, bytes32 prevLeaf, bytes memory proof) public {
     bytes32 calculatedRoot = getRoot(prevLeaf, key, proof);
     require(calculatedRoot == root, "update proof not valid");
-    root = getRoot(defaultHashes[0], key, proof);
+    root = getRoot(0, key, proof);
   }
 
   // first 160 bits of the proof are the 0/1 bits
@@ -53,13 +43,15 @@ contract SparseMerkleTree {
 
     for (uint d = 0; d < DEPTH; d++ ) {
       if (proofBits % 2 == 0) { // check if last bit of proofBits is 0
-        proofElement = defaultHashes[d];
+        proofElement = 0;
       } else {
         p += 32;
         require(proof.length >= p, "proof not long enough");
         assembly { proofElement := mload(add(proof, p)) }
       }
-      if (index % 2 == 0) {
+      if (computedHash == 0 && proofElement == 0) {
+        computedHash = 0;
+      } else if (index % 2 == 0) {
         assembly {
           mstore(0, computedHash)
           mstore(0x20, proofElement)
