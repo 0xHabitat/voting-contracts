@@ -37,9 +37,9 @@ function setTrailBit(trail, pos) {
 
 function setdefaultNodes(depth) {
   const defaultNodes = new Array(depth + 1);
-  defaultNodes[0] = Buffer.alloc(32, 0);//keccak256(Buffer.alloc(32, 0));
+  defaultNodes[0] = `0x${Buffer.alloc(32, 0).toString('hex')}`;//keccak256(Buffer.alloc(32, 0));
   for (let i = 1; i < depth + 1; i++) {
-    defaultNodes[i] = Buffer.alloc(32, 0);//merkelize(defaultNodes[i-1], defaultNodes[i-1]);
+    defaultNodes[i] = `0x${Buffer.alloc(32, 0).toString('hex')}`;//merkelize(defaultNodes[i-1], defaultNodes[i-1]);
   }
   return defaultNodes;
 }
