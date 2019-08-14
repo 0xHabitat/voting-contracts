@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-present, Leap DAO (leapdao.org)
+ * Copyright (c) 2019-present, Project Democracy
  *
  * This source code is licensed under the Mozilla Public License, version 2,
  * found in the LICENSE file in the root directory of this source tree.

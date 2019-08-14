@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-present, Leap DAO (leapdao.org)
+ * Copyright (c) 2019-present, Project Democracy
  *
  * This source code is licensed under the Mozilla Public License, version 2,
  * found in the LICENSE file in the root directory of this source tree.
@@ -30,7 +30,7 @@ contract("SparseMerkleTree", () => {
     assert.equal(rsp, tree.root);
   });
 
-  it("should allow to update root - test1", async() => {
+  it("should allow to update root", async() => {
     const smt = await SparseMerkleTree.new();
 
     // write first leaf
@@ -68,35 +68,7 @@ contract("SparseMerkleTree", () => {
     assert(rsp, '9 not contained');
   });
 
-  it("should allow to update root - test2", async() => {
-    const smt = await SparseMerkleTree.new();
-
-    // write first leaf
-    let tree = new SmtLib(9);
-    await smt.write(308, leafZero, tree.createMerkleProof(308), leafOne);
-
-    // write second leaf
-    tree = new SmtLib(9, {308: leafOne});
-    await smt.write(9, leafZero, tree.createMerkleProof(9), leafTwo);
-
-    // read first leaf back
-    tree = new SmtLib(9, {
-      '308': leafOne,
-      '9': leafTwo,
-    });
-    let rsp = await smt.read(308, leafOne, tree.createMerkleProof(308));
-    assert(rsp);
-    // negative read test
-    rsp = await smt.read(308, leafTwo, tree.createMerkleProof(308));
-    assert(!rsp);
-
-    // delete test
-    await smt.del(308, leafOne, tree.createMerkleProof(308));
-    rsp = await smt.read(308, leafZero, tree.createMerkleProof(308));
-    assert(rsp);
-  });
-
-  it("The issue with the delete function", async() => {
+  it("The allow to delete element", async() => {
     const smt = await SparseMerkleTree.new();
 
     // write first leaf
@@ -131,7 +103,6 @@ contract("SparseMerkleTree", () => {
     });
     const afterDeleteRoot = await smt.root();
     assert.equal(firstRoot, afterDeleteRoot);
-    // After calling the delete function with one key, the root takes zerohashes value. So, others writes deletes too and you can't use read function.
     rsp = await smt.read(9, leafTwo, tree.createMerkleProof(9));
     assert(rsp, 'reading last value fails');
   });
