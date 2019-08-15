@@ -5,10 +5,10 @@
  * found in the LICENSE file in the root directory of this source tree.
  */
 
-const SparseMerkleTree = artifacts.require("SparseMerkleTree");
+const SmtInstance = artifacts.require("SmtInstance");
 const SmtLib = require('./helpers/SmtLib.js');
 
-contract("SparseMerkleTree", () => {
+contract("SmtInstance", () => {
 
   const leafOne = '0xa59a60d98b69a32028020fbf69c27dc2188b5756975e93b330a3f1513f383076';
   const leafTwo = '0x95d22ccdd977e992e4a530ce4f1304e1a7a1840823ea1b4f7bf3841049d197e0';
@@ -17,7 +17,7 @@ contract("SparseMerkleTree", () => {
   const leafZero = '0x0000000000000000000000000000000000000000000000000000000000000000';
 
   it("should allow to verify proofs with single intersection", async() => {
-    const smt = await SparseMerkleTree.new();
+    const smt = await SmtInstance.new();
     const tree = new SmtLib(9, {
         '353': leafOne,
         '9': leafTwo,
@@ -31,7 +31,7 @@ contract("SparseMerkleTree", () => {
   });
 
   it("should allow to update root", async() => {
-    const smt = await SparseMerkleTree.new();
+    const smt = await SmtInstance.new();
 
     // write first leaf
     let tree = new SmtLib(9);
@@ -69,7 +69,7 @@ contract("SparseMerkleTree", () => {
   });
 
   it("The allow to delete element", async() => {
-    const smt = await SparseMerkleTree.new();
+    const smt = await SmtInstance.new();
 
     // write first leaf
     let tree = new SmtLib(9);

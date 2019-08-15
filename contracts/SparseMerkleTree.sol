@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2018-present, Leap DAO (leapdao.org)
+ * Copyright (c) 2019-present, Project Democracy
  *
  * This source code is licensed under the Mozilla Public License, version 2,
  * found in the LICENSE file in the root directory of this source tree.
@@ -12,27 +12,8 @@ pragma solidity >=0.4.21 <0.6.0;
 contract SparseMerkleTree {
 
   uint8 constant DEPTH = 9;
-  bytes32 public root;
 
-  function read(uint16 key, bytes32 leaf, bytes memory proof) public view returns (bool) {
-    bytes32 calculatedRoot = getRoot(leaf, key, proof);
-    return (calculatedRoot == root);
-  }
-
-  function write(uint16 key, bytes32 prevLeaf, bytes memory proof, bytes32 newLeaf) public {
-    bytes32 calculatedRoot = getRoot(prevLeaf, key, proof);
-    require(calculatedRoot == root, "update proof not valid");
-    root = getRoot(newLeaf, key, proof);
-  }
-
-  function del(uint16 key, bytes32 prevLeaf, bytes memory proof) public {
-    bytes32 calculatedRoot = getRoot(prevLeaf, key, proof);
-    require(calculatedRoot == root, "update proof not valid");
-    root = getRoot(0, key, proof);
-  }
-
-  // first 160 bits of the proof are the 0/1 bits
-  function getRoot(bytes32 leaf, uint16 _index, bytes memory proof) public view returns (bytes32) {
+  function _getRoot(bytes32 leaf, uint16 _index, bytes memory proof) internal view returns (bytes32) {
     require((proof.length - 2) % 32 == 0 && proof.length <= 290, "invalid proof format"); // 290 = 32 * 9 + 2
     bytes32 proofElement;
     bytes32 computedHash = leaf;

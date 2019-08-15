@@ -9,7 +9,6 @@ const keccak256 = require('ethereumjs-util').keccak256;
 
 const JSBI = require('jsbi');
 
-const zero = '0x95d22ccdd977e992e4a530ce4f1304e1a7a1840823ea1b4f7bf3841049d197e0';
 const ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000';
 const one = JSBI.BigInt(1);
 const two = JSBI.BigInt(2);
