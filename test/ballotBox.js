@@ -23,7 +23,6 @@ function replaceAll(str, find, replace) {
 contract('Ballot Box', (accounts) => {
   const voter = accounts[1];
   const TRASH_BOX = accounts[2];
-  const dataBefore = '0x0000000000000000000000000000000000000000000000000000000000000000';
   const balanceCardId = 123;
   const voiceBudget = '400000000000000000000';
   const totalVotes = '400000000000000000000';

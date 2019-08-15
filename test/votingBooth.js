@@ -24,7 +24,6 @@ contract('Voting Booth', (accounts) => {
   const voter = accounts[1];
   const YES_BOX = accounts[2];
   const NO_BOX = accounts[3];
-  const dataBefore = '0x0000000000000000000000000000000000000000000000000000000000000000';
   const balanceCardId = 123;
   const voiceBudget = '400000000000000000000';
   const totalVotes = '400000000000000000000';
