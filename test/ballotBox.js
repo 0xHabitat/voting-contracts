@@ -9,6 +9,7 @@ const ethUtil = require('ethereumjs-util');
 const BallotBox = artifacts.require('./BallotBox.sol');
 const SimpleToken = artifacts.require('./mocks/SimpleToken');
 const ERC1948 = artifacts.require('./mocks/ERC1948');
+const SmtLib = require('./helpers/SmtLib.js');
 
 const should = chai
   .use(require('chai-as-promised'))
@@ -22,7 +23,6 @@ function replaceAll(str, find, replace) {
 contract('Ballot Box', (accounts) => {
   const voter = accounts[1];
   const TRASH_BOX = accounts[2];
-  const dataBefore = '0x0000000000000000000000000000000000000000000000000000000000000000';
   const balanceCardId = 123;
   const voiceBudget = '400000000000000000000';
   const totalVotes = '400000000000000000000';
@@ -44,6 +44,8 @@ contract('Ballot Box', (accounts) => {
 
   it('should allow to cast ballot', async () => {
 
+    const motionId = `0x013E`;
+
     // deploy vote contract
     let tmp = BallotBox._json.bytecode;
     // replace token address placeholder to real token address
@@ -51,6 +53,7 @@ contract('Ballot Box', (accounts) => {
     tmp = replaceAll(tmp, '2341111111111111111111111111111111111234', votes.address);
     tmp = replaceAll(tmp, '3451111111111111111111111111111111111345', balanceCards.address);
     tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', TRASH_BOX);
+    tmp = replaceAll(tmp, '1337', motionId);
     BallotBox._json.bytecode = tmp;
     const ballotBox = await BallotBox.new();
 
@@ -60,13 +63,21 @@ contract('Ballot Box', (accounts) => {
 
     // print balance card for voter
     await balanceCards.mint(voter, balanceCardId);
+
+    let tree = new SmtLib(9, {
+      '5': '0x0000000000000000000000000000000000000000000000001BC16D674EC80000',
+      '318': '0x0000000000000000000000000000000000000000000000004563918244F40000'
+    });
+    await balanceCards.writeData(balanceCardId, tree.root, {from: voter});
+
     await balanceCards.approve(ballotBox.address, balanceCardId, {from: voter});
 
     // sending transaction
     const tx = await ballotBox.withdraw(
       balanceCardId,
-      ['0x0000000000000000000000000000000000000000000000004563918244F40000'],
+      tree.createMerkleProof(318),
       '5000000000000000000',
+      '5000000000000000000'
     ).should.be.fulfilled;
 
     // check result
@@ -75,7 +86,11 @@ contract('Ballot Box', (accounts) => {
     const voteAmount = await votes.balanceOf(TRASH_BOX);
     assert.equal(voteAmount.toString(10), '5000000000000000000');
     const card = await balanceCards.readData(balanceCardId);
-    assert.equal(card, dataBefore);
+    tree = new SmtLib(9, {
+      '5': '0x0000000000000000000000000000000000000000000000001BC16D674EC80000',
+      '318': '0x0000000000000000000000000000000000000000000000000000000000000000'
+    });
+    assert.equal(card, tree.root);
   });
 
 

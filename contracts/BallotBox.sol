@@ -6,30 +6,31 @@
  */
 pragma solidity ^0.5.2;
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
+import "./SparseMerkleTree.sol";
 import "./IERC1948.sol";
 
-contract BallotBox {
+contract BallotBox is SparseMerkleTree {
 
   address constant VOICE_CREDITS = 0x1231111111111111111111111111111111111123;
   address constant VOTES = 0x2341111111111111111111111111111111111234;
   address constant BALLOT_CARDS = 0x3451111111111111111111111111111111111345;
   address constant TRASH_BOX = 0x4561111111111111111111111111111111111456;
-  uint256 constant MOTION = 123;
+  uint16 constant MOTION_ID = 0x1337;
   bool constant IS_YES = true;
   uint256 constant CREDIT_DECIMALS = 1000000000000000000;
   
   function withdraw(
     uint256 ballotCardId,
-    bytes32[] memory proof,
+    bytes memory proof,
+    int256 placedVotes,
     uint256 removedVotes
   ) public {
 
     // read previous votes
     IERC1948 ballotCards = IERC1948(BALLOT_CARDS);
     bytes32 root = ballotCards.readData(ballotCardId);
-    // TODO: verify proof
-    // get votes at position
-    int256 placedVotes = int256(proof[0]);
+    require(root == _getRoot(bytes32(placedVotes), MOTION_ID, proof), "proof not valid");
+
     uint256 newAmount;
     if (placedVotes < 0) {
       newAmount = uint256(placedVotes * -1);
@@ -47,9 +48,7 @@ contract BallotBox {
     votes.transfer(TRASH_BOX, removedVotes);
     
     // update ballotCard
-    // TODO: calculate new root
-    proof[0] = bytes32(newAmount);
-    ballotCards.writeData(ballotCardId, root);
+    ballotCards.writeData(ballotCardId, _getRoot(bytes32(newAmount), MOTION_ID, proof));
   }
 
   // account used for consolidates.
