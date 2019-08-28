@@ -15,7 +15,7 @@ contract VotingBooth is SparseMerkleTree {
   address constant BALANCE_CARDS = 0x3451111111111111111111111111111111111345;
   address constant YES_BOX = 0x4561111111111111111111111111111111111456;
   address constant NO_BOX = 0x5671111111111111111111111111111111111567;
-  uint16 constant MOTION_ID = 0x1337;
+  uint48 constant MOTION_ID = 0xdeadbeef0001;
   uint256 constant CREDIT_DECIMALS = 1000000000000000000;
 
 
@@ -37,7 +37,7 @@ contract VotingBooth is SparseMerkleTree {
     // read previous votes
     IERC1948 ballotCards = IERC1948(BALANCE_CARDS);
     bytes32 root = ballotCards.readData(balanceCardId);
-    require(root == _getRoot(bytes32(placedVotes), MOTION_ID, proof), "proof not valid");
+    require(root == _getRoot(bytes32(placedVotes), uint16(MOTION_ID), proof), "proof not valid");
     address destinationBallot;
     if (placedVotes < 0) {
       require(newVotes < placedVotes, "can not decrease no vote");
@@ -56,7 +56,7 @@ contract VotingBooth is SparseMerkleTree {
     votes.transfer(destinationBallot, abs(newVotes - placedVotes));
     
     // update ballotCard
-    ballotCards.writeData(balanceCardId, _getRoot(bytes32(newVotes), MOTION_ID, proof));
+    ballotCards.writeData(balanceCardId, _getRoot(bytes32(newVotes), uint16(MOTION_ID), proof));
   }
 
   // account used for consolidates.
