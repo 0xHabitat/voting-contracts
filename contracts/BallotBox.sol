@@ -15,8 +15,8 @@ contract BallotBox is SparseMerkleTree {
   address constant VOTES = 0x2341111111111111111111111111111111111234;
   address constant BALLOT_CARDS = 0x3451111111111111111111111111111111111345;
   address constant TRASH_BOX = 0x4561111111111111111111111111111111111456;
-  uint16 constant MOTION_ID = 0x1337;
-  bool constant IS_YES = true;
+  uint48 constant MOTION_ID = 0xdeadbeef0001;
+  uint48 constant IS_YES = 0xdeadbeef0002;
   uint256 constant CREDIT_DECIMALS = 1000000000000000000;
   
   function withdraw(
@@ -25,16 +25,18 @@ contract BallotBox is SparseMerkleTree {
     int256 placedVotes,
     uint256 removedVotes
   ) public {
-
+    require(placedVotes > 0, "no withdrawal possible if no votes placed");
     // read previous votes
     IERC1948 ballotCards = IERC1948(BALLOT_CARDS);
     bytes32 root = ballotCards.readData(ballotCardId);
-    require(root == _getRoot(bytes32(placedVotes), MOTION_ID, proof), "proof not valid");
+    require(root == _getRoot(bytes32(placedVotes), uint16(MOTION_ID), proof), "proof not valid");
 
     uint256 newAmount;
     if (placedVotes < 0) {
+      require(!getIsYes(IS_YES), "can only withdraw from no-box if bal < 0");
       newAmount = uint256(placedVotes * -1);
     } else {
+      require(getIsYes(IS_YES), "can only withdraw from yes-box if bal > 0");
       newAmount = uint256(placedVotes);
     }
     require(removedVotes <= newAmount, "can not withdraw more votes than placed");
@@ -48,11 +50,15 @@ contract BallotBox is SparseMerkleTree {
     votes.transfer(TRASH_BOX, removedVotes);
     
     // update ballotCard
-    ballotCards.writeData(ballotCardId, _getRoot(bytes32(newAmount), MOTION_ID, proof));
+    ballotCards.writeData(ballotCardId, _getRoot(bytes32(newAmount), uint16(MOTION_ID), proof));
   }
 
   // account used for consolidates.
   address constant OPERATOR = 0x7891111111111111111111111111111111111789;
+
+  function getIsYes(uint48 isYes) internal pure returns (bool) {
+    return (isYes > 0);
+  }
 
   // used to combine multiple contract UTXOs into one.
   function consolidate(uint8 v, bytes32 r, bytes32 s) public {

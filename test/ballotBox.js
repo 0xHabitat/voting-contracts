@@ -44,7 +44,36 @@ contract('Ballot Box', (accounts) => {
 
   it('should allow to cast ballot', async () => {
 
-    const motionId = `0x013E`;
+
+    let motionId = `0x000000000000`;
+
+    let code = BallotBox._json.deployedBytecode;
+    const voiceCredAddr = '0x8f8FDcA55F0601187ca24507d4A1fE1b387Db90B';
+    const votesAddr = '0x3442c197cc858bED2476BDd9c7d4499552780f3D';
+    const balCardAddr = '0xCD1b3a9a7B5f84BC7829Bc7e6e23adb1960beE97';
+    const trashAddr =   '0x0000000000000000000000000000000000000000';
+    const isYes = false;
+    const YES = '000000000001';
+    const NO = '000000000000';
+    // replace token address placeholder to real token address
+    code = replaceAll(code, '1231111111111111111111111111111111111123', voiceCredAddr.replace('0x', '').toLowerCase());
+    code = replaceAll(code, '2341111111111111111111111111111111111234', votesAddr.replace('0x', '').toLowerCase());
+    code = replaceAll(code, '3451111111111111111111111111111111111345', balCardAddr.replace('0x', '').toLowerCase());
+    code = replaceAll(code, '4561111111111111111111111111111111111456', trashAddr.replace('0x', '').toLowerCase());
+    if (isYes) {
+      code = replaceAll(code, 'deadbeef0002', YES);
+    } else {
+      code = replaceAll(code, 'deadbeef0002', NO);
+    }
+    
+    code = replaceAll(code, 'deadbeef0001', motionId);
+    // console.log('code: ', code);
+    const script = Buffer.from(code.replace('0x', ''), 'hex');
+    const scriptHash = ethUtil.ripemd160(script);
+    console.log(`box ${isYes} contract address: 0x${scriptHash.toString('hex')}`);
+
+
+    motionId = `0x00000000013E`;
 
     // deploy vote contract
     let tmp = BallotBox._json.bytecode;
@@ -53,7 +82,7 @@ contract('Ballot Box', (accounts) => {
     tmp = replaceAll(tmp, '2341111111111111111111111111111111111234', votes.address);
     tmp = replaceAll(tmp, '3451111111111111111111111111111111111345', balanceCards.address);
     tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', TRASH_BOX);
-    tmp = replaceAll(tmp, '1337', motionId);
+    tmp = replaceAll(tmp, 'deadbeef0001', motionId);
     BallotBox._json.bytecode = tmp;
     const ballotBox = await BallotBox.new();
 
