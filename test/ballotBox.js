@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-present, Project Democracy
+ * Copyright (c) 2019-present, deora.earth
  *
  * This source code is licensed under the Mozilla Public License, version 2,
  * found in the LICENSE file in the root directory of this source tree.
@@ -24,6 +24,7 @@ contract('Ballot Box', (accounts) => {
   const voter = accounts[1];
   const TRASH_BOX = accounts[2];
   const balanceCardId = 123;
+  const voterPriv = '0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201';
   const voiceBudget = '400000000000000000000';
   const totalVotes = '400000000000000000000';
   let voiceCredits;
@@ -42,7 +43,7 @@ contract('Ballot Box', (accounts) => {
     BallotBox._json.bytecode = originalByteCode;
   });
 
-  it('should allow to cast ballot', async () => {
+  it('should allow to withdraw vote', async () => {
 
 
     let motionId = `0x000000000000`;
@@ -123,5 +124,23 @@ contract('Ballot Box', (accounts) => {
     assert.equal(card, tree.root);
   });
 
+
+  it('should allow to consolidate', async () => {
+    // deploy earth
+    let tmp = BallotBox._json.bytecode;
+    // replace token address placeholder to real token address
+    tmp = replaceAll(tmp, '7891111111111111111111111111111111111789', voter.replace('0x', ''));
+    BallotBox._json.bytecode = tmp;
+    const boxContract = await BallotBox.new();
+
+    await votes.transfer(boxContract.address, totalVotes);
+
+    const buf = Buffer.alloc(32, 0);
+    Buffer.from(boxContract.address.replace('0x', ''), 'hex').copy(buf, 12, 0, 20);
+    const sig = ethUtil.ecsign(buf, Buffer.from(voterPriv.replace('0x', '') , 'hex'));
+
+    // sending transaction
+    const tx = await boxContract.consolidate(votes.address, sig.v, sig.r, sig.s).should.be.fulfilled;
+  });
 
 });

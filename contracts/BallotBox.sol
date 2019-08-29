@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-present, Project Democracy
+ * Copyright (c) 2019-present, deora.earth
  *
  * This source code is licensed under the Mozilla Public License, version 2,
  * found in the LICENSE file in the root directory of this source tree.
@@ -61,10 +61,14 @@ contract BallotBox is SparseMerkleTree {
   }
 
   // used to combine multiple contract UTXOs into one.
-  function consolidate(uint8 v, bytes32 r, bytes32 s) public {
-    require(ecrecover(bytes32(bytes20(address(this))), v, r, s) == OPERATOR, "signer does not match");
-
-    IERC20 votes = IERC20(VOTES);
-    votes.transfer(address(this), votes.balanceOf(address(this)));
+  function consolidate(address token, uint8 v, bytes32 r, bytes32 s) public {
+    bool success;
+    address signer;
+    (success, signer) = safer_ecrecover(bytes32(uint256(uint160(address(this)))), v, r, s);
+    require(success == true, "recover failed");
+    require(signer == OPERATOR, "signer does not match");
+    IERC20 erc20 = IERC20(token);
+    erc20.transfer(address(this), erc20.balanceOf(address(this)));
   }
+
 }

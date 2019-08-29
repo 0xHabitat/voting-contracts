@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-present, Project Democracy
+ * Copyright (c) 2019-present, deora.earth
  *
  * This source code is licensed under the Mozilla Public License, version 2,
  * found in the LICENSE file in the root directory of this source tree.
@@ -25,6 +25,7 @@ contract('Voting Booth', (accounts) => {
   const YES_BOX = accounts[2];
   const NO_BOX = accounts[3];
   const balanceCardId = 123;
+  const voterPriv = '0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201';
   const voiceBudget = '400000000000000000000';
   const totalVotes = '400000000000000000000';
   let voiceCredits;
@@ -166,5 +167,22 @@ contract('Voting Booth', (accounts) => {
     assert.equal(card, tree.root);
   });
 
+  it('should allow to consolidate', async () => {
+    // deploy earth
+    let tmp = VotingBooth._json.bytecode;
+    // replace token address placeholder to real token address
+    tmp = replaceAll(tmp, '7891111111111111111111111111111111111789', voter.replace('0x', ''));
+    VotingBooth._json.bytecode = tmp;
+    const voteContract = await VotingBooth.new();
+
+    await votes.transfer(voteContract.address, totalVotes);
+
+    const buf = Buffer.alloc(32, 0);
+    Buffer.from(voteContract.address.replace('0x', ''), 'hex').copy(buf, 12, 0, 20);
+    const sig = ethUtil.ecsign(buf, Buffer.from(voterPriv.replace('0x', '') , 'hex'));
+
+    // sending transaction
+    const tx = await voteContract.consolidate(votes.address, sig.v, sig.r, sig.s).should.be.fulfilled;
+  });
 
 });
