@@ -128,7 +128,60 @@ contract('Ballot Box', (accounts) => {
     assert.equal(card, tree.root);
   });
 
-  it('should allow to withdraw no votes', async () => {
+
+  it('should allow to withdraw YES votes slightly', async () => {
+
+    motionId = `0x000000000005`;
+
+    // deploy vote contract
+    let tmp = BallotBox._json.bytecode;
+    // replace token address placeholder to real token address
+    tmp = replaceAll(tmp, '1231111111111111111111111111111111111123', voiceCredits.address);
+    tmp = replaceAll(tmp, '2341111111111111111111111111111111111234', votes.address);
+    tmp = replaceAll(tmp, '3451111111111111111111111111111111111345', balanceCards.address);
+    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', TRASH_BOX);
+    tmp = replaceAll(tmp, 'deadbeef0001', motionId);
+    tmp = replaceAll(tmp, 'deadbeef0002', YES);
+    BallotBox._json.bytecode = tmp;
+    const ballotBox = await BallotBox.new();
+
+    // fund ballot Box
+    await voiceCredits.transfer(ballotBox.address, voiceBudget);
+    await votes.transfer(ballotBox.address, totalVotes);
+
+    // print balance card for voter
+    await balanceCards.mint(voter, balanceCardId);
+
+    let tree = new SmtLib(9, {
+      '5': '0x0000000000000000000000000000000000000000000000004563918244F40000',
+      '318': '0x0000000000000000000000000000000000000000000000001BC16D674EC80000'
+    });
+    await balanceCards.writeData(balanceCardId, tree.root, {from: voter});
+
+    await balanceCards.approve(ballotBox.address, balanceCardId, {from: voter});
+
+    // sending transaction
+    const tx = await ballotBox.withdraw(
+      balanceCardId,
+      tree.createMerkleProof(5),
+      '5000000000000000000',
+      '1000000000000000000'
+    ).should.be.fulfilled;
+
+    // check result
+    const credits = await voiceCredits.balanceOf(voter);
+    assert.equal(credits.toString(10), '9000000000000000000');
+    const voteAmount = await votes.balanceOf(TRASH_BOX);
+    assert.equal(voteAmount.toString(10), '1000000000000000000');
+    const card = await balanceCards.readData(balanceCardId);
+    tree = new SmtLib(9, {
+      '5': '0x0000000000000000000000000000000000000000000000003782DACE9D900000',
+      '318': '0x0000000000000000000000000000000000000000000000001BC16D674EC80000'
+    });
+    assert.equal(card, tree.root);
+  });
+
+  it('should allow to withdraw NO votes', async () => {
 
     motionId = `0x000000000005`;
 
@@ -180,7 +233,6 @@ contract('Ballot Box', (accounts) => {
     });
     assert.equal(card, tree.root);
   });
-
 
   it('should allow to consolidate', async () => {
     // deploy earth

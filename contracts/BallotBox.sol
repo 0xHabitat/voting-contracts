@@ -33,6 +33,7 @@ contract BallotBox is SparseMerkleTree {
     uint256 removedVotes
   ) public {
     require(placedVotes != 0, "no withdrawal possible if no votes placed");
+    require(removedVotes > 0, "can not withdraw nothing");
     // read previous votes
     IERC1948 ballotCards = IERC1948(BALLOT_CARDS);
     bytes32 root = ballotCards.readData(ballotCardId);
@@ -52,10 +53,8 @@ contract BallotBox is SparseMerkleTree {
     // transfer credits
     IERC20 credits = IERC20(VOICE_CREDITS);
     address voter = ballotCards.ownerOf(ballotCardId);
-    uint256 returned = uint256(placedVotes * placedVotes) - removedVotes * removedVotes;
-    if (returned == 0) {
-      returned = uint256(placedVotes * placedVotes);
-    }
+    uint256 remaining = uint256(abs(placedVotes)) - removedVotes;
+    uint256 returned = uint256(placedVotes * placedVotes) - remaining * remaining;
     returned /= CREDIT_DECIMALS;
     credits.transfer(voter, returned);
     // transfer votes
