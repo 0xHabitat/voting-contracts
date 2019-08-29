@@ -77,4 +77,12 @@ contract SparseMerkleTree {
 
     return (ret, addr);
   }
+
+  function abs(int256 val) internal pure returns (uint256) {
+    if (val < 0) {
+      return uint256(val * -1);
+    } else {
+      return uint256(val);
+    }
+  }
 }

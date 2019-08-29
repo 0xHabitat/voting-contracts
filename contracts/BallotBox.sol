@@ -18,6 +18,13 @@ contract BallotBox is SparseMerkleTree {
   uint48 constant MOTION_ID = 0xdeadbeef0001;
   uint48 constant IS_YES = 0xdeadbeef0002;
   uint256 constant CREDIT_DECIMALS = 1000000000000000000;
+
+  event NewWithdrawal(
+    address indexed voter,
+    uint16 indexed MOTION_ID,
+    bool indexed isYes,
+    uint256 withdrawnVotes
+  );
   
   function withdraw(
     uint256 ballotCardId,
@@ -25,7 +32,7 @@ contract BallotBox is SparseMerkleTree {
     int256 placedVotes,
     uint256 removedVotes
   ) public {
-    require(placedVotes > 0, "no withdrawal possible if no votes placed");
+    require(placedVotes != 0, "no withdrawal possible if no votes placed");
     // read previous votes
     IERC1948 ballotCards = IERC1948(BALLOT_CARDS);
     bytes32 root = ballotCards.readData(ballotCardId);
@@ -44,13 +51,21 @@ contract BallotBox is SparseMerkleTree {
 
     // transfer credits
     IERC20 credits = IERC20(VOICE_CREDITS);
-    credits.transfer(ballotCards.ownerOf(ballotCardId), (removedVotes * removedVotes) / CREDIT_DECIMALS);
+    address voter = ballotCards.ownerOf(ballotCardId);
+    uint256 returned = uint256(placedVotes * placedVotes) - removedVotes * removedVotes;
+    if (returned == 0) {
+      returned = uint256(placedVotes * placedVotes);
+    }
+    returned /= CREDIT_DECIMALS;
+    credits.transfer(voter, returned);
     // transfer votes
-    IERC20 votes = IERC20(VOTES);
-    votes.transfer(TRASH_BOX, removedVotes);
+    IERC20(VOTES).transfer(TRASH_BOX, removedVotes);
     
     // update ballotCard
     ballotCards.writeData(ballotCardId, _getRoot(bytes32(newAmount), uint16(MOTION_ID), proof));
+
+    // emit event
+    emit NewWithdrawal(voter, uint16(MOTION_ID), getIsYes(IS_YES), removedVotes);
   }
 
   // account used for consolidates.
