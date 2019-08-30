@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2019-present, Project Democracy
+ * Copyright (c) 2019-present, deora.earth
  *
  * This source code is licensed under the Mozilla Public License, version 2,
  * found in the LICENSE file in the root directory of this source tree.
