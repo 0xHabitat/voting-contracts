@@ -18,12 +18,12 @@ contract VotingBooth is SparseMerkleTree {
   uint48 constant MOTION_ID = 0xdeadbeef0001;
   uint256 constant CREDIT_DECIMALS = 1000000000000000000;
 
-  event NewVote(
-    address indexed voter,
-    uint16 indexed MOTION_ID,
-    bool indexed isYes,
-    uint256 placedVotes
-  );
+  // event NewVote(
+  //   address indexed voter,
+  //   uint16 indexed MOTION_ID,
+  //   bool indexed isYes,
+  //   uint256 placedVotes
+  // );
   
   function castBallot(
     uint256 balanceCardId,
@@ -57,7 +57,7 @@ contract VotingBooth is SparseMerkleTree {
     ballotCards.writeData(balanceCardId, _getRoot(bytes32(newVotes), uint16(MOTION_ID), proof));
 
     // emit event
-    emit NewVote(voter, uint16(MOTION_ID), newVotes > 0,diffCredits);
+    // emit NewVote(voter, uint16(MOTION_ID), newVotes > 0,diffCredits);
   }
 
   // account used for consolidates.
