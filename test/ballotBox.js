@@ -56,7 +56,7 @@ contract('Ballot Box', (accounts) => {
     const votesAddr = '0x3442c197cc858bED2476BDd9c7d4499552780f3D';
     const balCardAddr = '0xCD1b3a9a7B5f84BC7829Bc7e6e23adb1960beE97';
     const trashAddr =   '0x0000000000000000000000000000000000000000';
-    const isYes = false;
+    const isYes = true;
     // replace token address placeholder to real token address
     code = replaceAll(code, '1231111111111111111111111111111111111123', voiceCredAddr.replace('0x', '').toLowerCase());
     code = replaceAll(code, '2341111111111111111111111111111111111234', votesAddr.replace('0x', '').toLowerCase());

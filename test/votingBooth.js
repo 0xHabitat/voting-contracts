@@ -49,12 +49,12 @@ contract('Voting Booth', (accounts) => {
     const motionId = `000000000000`;
 
     let code = VotingBooth._json.deployedBytecode;
-    // console.log('raw booth: ', code);
+    console.log('raw booth: ', code);
     const voiceCredAddr = '0x8f8FDcA55F0601187ca24507d4A1fE1b387Db90B';
     const votesAddr = '0x3442c197cc858bED2476BDd9c7d4499552780f3D';
     const balCardAddr = '0xCD1b3a9a7B5f84BC7829Bc7e6e23adb1960beE97';
-    const yesBoxAddr = '0xdea3f5922b9bbde4707d1f73d4d265040c49282b';
-    const noBoxAddr = '0x772e6c04dcb3b42d716db90699de6664f4ba45ba';
+    const yesBoxAddr = '0x10b3bf535f874b6a11818b61d4d164fc0b63e5e1';
+    const noBoxAddr = '0x6d3fb1c8abd362e7cf33c982b8943b05c042fb80';
 
     // replace token address placeholder to real token address
     code = replaceAll(code, '1231111111111111111111111111111111111123', voiceCredAddr.replace('0x', '').toLowerCase());
@@ -63,7 +63,7 @@ contract('Voting Booth', (accounts) => {
     code = replaceAll(code, '4561111111111111111111111111111111111456', yesBoxAddr.replace('0x', '').toLowerCase());
     code = replaceAll(code, '5671111111111111111111111111111111111567', noBoxAddr.replace('0x', '').toLowerCase());
     code = replaceAll(code, 'deadbeef0001', motionId);
-    // console.log('code: ', code);
+    //console.log('code: ', code);
     const script = Buffer.from(code.replace('0x', ''), 'hex');
     const scriptHash = ethUtil.ripemd160(script);
     console.log(`booth contract address: 0x${scriptHash.toString('hex')}`);
