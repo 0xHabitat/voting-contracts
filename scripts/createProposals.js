@@ -22,7 +22,7 @@ function generateProposal(motionId) {
     const voiceCredAddr = '0x8f8FDcA55F0601187ca24507d4A1fE1b387Db90B';
     const votesAddr = '0x3442c197cc858bED2476BDd9c7d4499552780f3D';
     const balCardAddr = '0xCD1b3a9a7B5f84BC7829Bc7e6e23adb1960beE97';
-    const trashAddr =   '0x0000000000000000000000000000000000000000';
+    const trashAddr =   '0xDB3D918dF2cb3E5486CfC39b188c6f2B268a6511';
     const YES = '000000000001';
     const NO = '000000000000';
     const motionId48 = "00000000000" + motionId.toString(16).slice(-12);
