@@ -53,8 +53,8 @@ contract('Voting Booth', (accounts) => {
     const voiceCredAddr = '0x8f8FDcA55F0601187ca24507d4A1fE1b387Db90B';
     const votesAddr = '0x3442c197cc858bED2476BDd9c7d4499552780f3D';
     const balCardAddr = '0xCD1b3a9a7B5f84BC7829Bc7e6e23adb1960beE97';
-    const yesBoxAddr = '0x10b3bf535f874b6a11818b61d4d164fc0b63e5e1';
-    const noBoxAddr = '0x6d3fb1c8abd362e7cf33c982b8943b05c042fb80';
+    const yesBoxAddr = '0x519d77c37bb49d559dade00fa155e0e370e9a531';
+    const noBoxAddr = '0xb4c625b6c18f30477dc530471315ccbf18f81a21';
 
     // replace token address placeholder to real token address
     code = replaceAll(code, '1231111111111111111111111111111111111123', voiceCredAddr.replace('0x', '').toLowerCase());
