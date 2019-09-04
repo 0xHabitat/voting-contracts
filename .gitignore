@@ -31,4 +31,3 @@ build/
 # lol macs
 .DS_Store/
 .DS_Store
-yarn.lock
