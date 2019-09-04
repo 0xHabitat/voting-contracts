@@ -63,7 +63,7 @@ contract('Voting Booth', (accounts) => {
     code = replaceAll(code, '4561111111111111111111111111111111111456', yesBoxAddr.replace('0x', '').toLowerCase());
     code = replaceAll(code, '5671111111111111111111111111111111111567', noBoxAddr.replace('0x', '').toLowerCase());
     code = replaceAll(code, 'deadbeef0001', motionId);
-    //console.log('code: ', code);
+    // console.log('code: ', code);
     const script = Buffer.from(code.replace('0x', ''), 'hex');
     const scriptHash = ethUtil.ripemd160(script);
     console.log(`booth contract address: 0x${scriptHash.toString('hex')}`);
@@ -216,6 +216,60 @@ contract('Voting Booth', (accounts) => {
     const card = await balanceCards.readData(balanceCardId);
     tree = new SmtLib(9, {
       '0': '0x0000000000000000000000000000000000000000000000001BC16D674EC80000',
+      '7': '0x0000000000000000000000000000000000000000000000001BC16D674EC80000'
+    });
+    assert.equal(card, tree.root);
+  });
+
+  it('should allow to cast no', async () => {
+
+    const motionId = `000000000000`;
+    // deploy vote contract
+    let tmp = VotingBooth._json.bytecode;
+    // replace token address placeholder to real token address
+    tmp = replaceAll(tmp, '1231111111111111111111111111111111111123', voiceCredits.address);
+    tmp = replaceAll(tmp, '2341111111111111111111111111111111111234', votes.address);
+    tmp = replaceAll(tmp, '3451111111111111111111111111111111111345', balanceCards.address);
+    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', YES_BOX);
+    tmp = replaceAll(tmp, '5671111111111111111111111111111111111567', NO_BOX);
+    tmp = replaceAll(tmp, 'deadbeef0001', motionId);
+    VotingBooth._json.bytecode = tmp;
+    const voteContract = await VotingBooth.new();
+
+    // fund voter
+    await voiceCredits.transfer(voter, voiceBudget);
+    await votes.transfer(voteContract.address, totalVotes);
+
+    // print balance card for voter
+    await balanceCards.mint(voter, balanceCardId);
+
+    let tree = new SmtLib(9, {
+      '0': '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '7': '0x0000000000000000000000000000000000000000000000001BC16D674EC80000'
+    });
+
+    await balanceCards.writeData(balanceCardId, tree.root, {from: voter});
+    await balanceCards.approve(voteContract.address, balanceCardId, {from: voter});
+
+    // voter signing transaction
+    await voiceCredits.approve(voteContract.address, voiceBudget, {from: voter});
+
+    // sending transaction
+    const tx = await voteContract.castBallot(
+      balanceCardId,
+      tree.createMerkleProof(0),
+      0,
+      '-1000000000000000000',
+    ).should.be.fulfilled;
+
+    // check result
+    const credits = await voiceCredits.balanceOf(NO_BOX);
+    assert.equal(credits.toString(10), '1000000000000000000');
+    const voteAmount = await votes.balanceOf(NO_BOX);
+    assert.equal(voteAmount.toString(10), '1000000000000000000');
+    const card = await balanceCards.readData(balanceCardId);
+    tree = new SmtLib(9, {
+      '0': '0xffffffffffffffffffffffffffffffffffffffffffffffffF21F494C589C0000',
       '7': '0x0000000000000000000000000000000000000000000000001BC16D674EC80000'
     });
     assert.equal(card, tree.root);

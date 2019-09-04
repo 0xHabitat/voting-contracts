@@ -36,14 +36,13 @@ contract VotingBooth is SparseMerkleTree {
     IERC1948 ballotCards = IERC1948(BALANCE_CARDS);
     bytes32 root = ballotCards.readData(balanceCardId);
     require(root == _getRoot(bytes32(placedVotes), uint16(MOTION_ID), proof), "proof not valid");
-    address destinationBallot;
     if (placedVotes < 0) {
       require(newVotes < placedVotes, "can not decrease no vote");
-      destinationBallot = NO_BOX;
-    } else {
+    } else if (placedVotes > 0) {
       require(newVotes > placedVotes, "can not decrease yes vote");
-      destinationBallot = YES_BOX;
     }
+    require(newVotes != 0, "can not vote 0");
+    address destinationBallot = (newVotes < 0) ? NO_BOX : YES_BOX;
     uint256 diffCredits = uint256((newVotes * newVotes) - (placedVotes * placedVotes)) / CREDIT_DECIMALS;
 
     // transfer credits
