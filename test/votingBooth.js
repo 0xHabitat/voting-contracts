@@ -49,7 +49,7 @@ contract('Voting Booth', (accounts) => {
     const motionId = `000000000000`;
 
     let code = VotingBooth._json.deployedBytecode;
-    console.log('raw booth: ', code);
+    // console.log('raw booth: ', code);
     const voiceCredAddr = '0x8f8FDcA55F0601187ca24507d4A1fE1b387Db90B';
     const votesAddr = '0x3442c197cc858bED2476BDd9c7d4499552780f3D';
     const balCardAddr = '0xCD1b3a9a7B5f84BC7829Bc7e6e23adb1960beE97';
