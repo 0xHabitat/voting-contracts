@@ -72,9 +72,28 @@ for (let contract of contracts) {
   fs.writeFileSync(
     outFile,
 `
+const { bufferToHex, ripemd160 } = require("ethereumjs-util");
+
 const code = '${code}';
 
 const keys = ${JSON.stringify(contract.keys, null, 2)};
+
+const abi = ${JSON.stringify(contract.truffleJson.abi, null, 2)};
+
+const withParams = (code) => (params) => {
+  let codeCopy = code;
+  Object.keys(params).forEach((k) => {
+    console.log(k.padEnd(20, ' '), keys[k], params[k]);
+    codeCopy = replaceAll(codeCopy, keys[k], params[k]);
+  });
+  return { 
+    address: bufferToHex(ripemd160(codeCopy)),
+    code: codeCopy,
+    keys,
+    abi,
+    withParams: withParams(codeCopy),
+  };
+};
 
 const replaceAll = (str, find, replace) =>
   str.replace(new RegExp(find, "g"), replace.replace("0x", "").toLowerCase());
@@ -83,15 +102,8 @@ module.exports = {
   address: '${contractAddr}',
   code,
   keys,
-  abi: ${JSON.stringify(contract.truffleJson.abi, null, 2)},
-  withParams: (params) => {
-    let codeCopy = code;
-    Object.keys(params).forEach((k) => {
-      console.log(k.padEnd(20, ' '), keys[k], params[k]);
-      codeCopy = replaceAll(codeCopy, keys[k], params[k]);
-    });
-    return codeCopy;
-  }
+  abi,
+  withParams: withParams(code)
 };
 `
   );
