@@ -16,7 +16,7 @@ const should = chai
   .should();
 
 function replaceAll(str, find, replace) {
-    return str.replace(new RegExp(find, 'g'), replace.replace('0x', ''));
+    return str.replace(new RegExp(find, 'g'), replace.replace('0x', '').toLowerCase());
 }
 
 
@@ -47,27 +47,6 @@ contract('Voting Booth', (accounts) => {
   it('should allow to cast ballot', async () => {
 
     const motionId = `000000000000`;
-
-    let code = VotingBooth._json.deployedBytecode;
-    // console.log('raw booth: ', code);
-    const voiceCredAddr = '0x8f8FDcA55F0601187ca24507d4A1fE1b387Db90B';
-    const votesAddr = '0x3442c197cc858bED2476BDd9c7d4499552780f3D';
-    const balCardAddr = '0xCD1b3a9a7B5f84BC7829Bc7e6e23adb1960beE97';
-    const yesBoxAddr = '0x519d77c37bb49d559dade00fa155e0e370e9a531';
-    const noBoxAddr = '0xb4c625b6c18f30477dc530471315ccbf18f81a21';
-
-    // replace token address placeholder to real token address
-    code = replaceAll(code, '1231111111111111111111111111111111111123', voiceCredAddr.replace('0x', '').toLowerCase());
-    code = replaceAll(code, '2341111111111111111111111111111111111234', votesAddr.replace('0x', '').toLowerCase());
-    code = replaceAll(code, '3451111111111111111111111111111111111345', balCardAddr.replace('0x', '').toLowerCase());
-    code = replaceAll(code, '4561111111111111111111111111111111111456', yesBoxAddr.replace('0x', '').toLowerCase());
-    code = replaceAll(code, '5671111111111111111111111111111111111567', noBoxAddr.replace('0x', '').toLowerCase());
-    code = replaceAll(code, 'deadbeef0001', motionId);
-    // console.log('code: ', code);
-    const script = Buffer.from(code.replace('0x', ''), 'hex');
-    const scriptHash = ethUtil.ripemd160(script);
-    console.log(`booth contract address: 0x${scriptHash.toString('hex')}`);
-
 
     // deploy vote contract
     let tmp = VotingBooth._json.bytecode;

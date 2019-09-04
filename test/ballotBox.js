@@ -16,13 +16,13 @@ const should = chai
   .should();
 
 function replaceAll(str, find, replace) {
-    return str.replace(new RegExp(find, 'g'), replace.replace('0x', ''));
+    return str.replace(new RegExp(find, 'g'), replace.replace('0x', '').toLowerCase());
 }
 
 
 contract('Ballot Box', (accounts) => {
   const voter = accounts[1];
-  const TRASH_BOX = '0xDB3D918dF2cb3E5486CfC39b188c6f2B268a6511'; // eco system multisig
+  const TRASH_BOX = '0x0d56caf1ccb9eddf27423a1d0f8960554e7bc9d5'; // eco system multisig
   const balanceCardId = 123;
   const voterPriv = '0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501201';
   const voiceBudget = '400000000000000000000';
@@ -47,33 +47,6 @@ contract('Ballot Box', (accounts) => {
 
   it('should allow to withdraw yes votes', async () => {
 
-
-    let motionId = `0x000000000000`;
-
-    let code = BallotBox._json.deployedBytecode;
-    // console.log('raw box: ', code);
-    const voiceCredAddr = '0x8f8FDcA55F0601187ca24507d4A1fE1b387Db90B';
-    const votesAddr = '0x3442c197cc858bED2476BDd9c7d4499552780f3D';
-    const balCardAddr = '0xCD1b3a9a7B5f84BC7829Bc7e6e23adb1960beE97';
-    const isYes = false;
-    // replace token address placeholder to real token address
-    code = replaceAll(code, '1231111111111111111111111111111111111123', voiceCredAddr.replace('0x', '').toLowerCase());
-    code = replaceAll(code, '2341111111111111111111111111111111111234', votesAddr.replace('0x', '').toLowerCase());
-    code = replaceAll(code, '3451111111111111111111111111111111111345', balCardAddr.replace('0x', '').toLowerCase());
-    code = replaceAll(code, '4561111111111111111111111111111111111456', TRASH_BOX.replace('0x', '').toLowerCase());
-    if (isYes) {
-      code = replaceAll(code, 'deadbeef0002', YES);
-    } else {
-      code = replaceAll(code, 'deadbeef0002', NO);
-    }
-    
-    code = replaceAll(code, 'deadbeef0001', motionId);
-    // console.log('code: ', code);
-    const script = Buffer.from(code.replace('0x', ''), 'hex');
-    const scriptHash = ethUtil.ripemd160(script);
-    console.log(`box ${isYes} contract address: 0x${scriptHash.toString('hex')}`);
-
-
     motionId = `0x00000000013E`;
 
     // deploy vote contract
@@ -82,7 +55,7 @@ contract('Ballot Box', (accounts) => {
     tmp = replaceAll(tmp, '1231111111111111111111111111111111111123', voiceCredits.address);
     tmp = replaceAll(tmp, '2341111111111111111111111111111111111234', votes.address);
     tmp = replaceAll(tmp, '3451111111111111111111111111111111111345', balanceCards.address);
-    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', TRASH_BOX.replace('0x', '').toLowerCase());
+    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', TRASH_BOX);
     tmp = replaceAll(tmp, 'deadbeef0001', motionId);
     tmp = replaceAll(tmp, 'deadbeef0002', YES);
     BallotBox._json.bytecode = tmp;
@@ -138,7 +111,7 @@ contract('Ballot Box', (accounts) => {
     tmp = replaceAll(tmp, '1231111111111111111111111111111111111123', voiceCredits.address);
     tmp = replaceAll(tmp, '2341111111111111111111111111111111111234', votes.address);
     tmp = replaceAll(tmp, '3451111111111111111111111111111111111345', balanceCards.address);
-    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', TRASH_BOX.replace('0x', '').toLowerCase());
+    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', TRASH_BOX);
     tmp = replaceAll(tmp, 'deadbeef0001', motionId);
     tmp = replaceAll(tmp, 'deadbeef0002', YES);
     BallotBox._json.bytecode = tmp;
@@ -190,7 +163,7 @@ contract('Ballot Box', (accounts) => {
     tmp = replaceAll(tmp, '1231111111111111111111111111111111111123', voiceCredits.address);
     tmp = replaceAll(tmp, '2341111111111111111111111111111111111234', votes.address);
     tmp = replaceAll(tmp, '3451111111111111111111111111111111111345', balanceCards.address);
-    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', TRASH_BOX.replace('0x', '').toLowerCase());
+    tmp = replaceAll(tmp, '4561111111111111111111111111111111111456', TRASH_BOX);
     tmp = replaceAll(tmp, 'deadbeef0001', motionId);
     tmp = replaceAll(tmp, 'deadbeef0002', NO);
     BallotBox._json.bytecode = tmp;
@@ -237,7 +210,7 @@ contract('Ballot Box', (accounts) => {
     // deploy earth
     let tmp = BallotBox._json.bytecode;
     // replace token address placeholder to real token address
-    tmp = replaceAll(tmp, '7891111111111111111111111111111111111789', voter.replace('0x', ''));
+    tmp = replaceAll(tmp, '7891111111111111111111111111111111111789', voter);
     BallotBox._json.bytecode = tmp;
     const boxContract = await BallotBox.new();
 
