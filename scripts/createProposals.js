@@ -5,11 +5,11 @@ var oldData = require('../oldData.json');
 
 const CONFIG = {
   fileName: {
-    booth: "boothAddrs.txt",
-    yes: "yesAddrs.txt",
-    no: "noAddrs.txt",
+    booth: "./build/boothAddrs.txt",
+    yes: "./build/yesAddrs.txt",
+    no: "./build/noAddrs.txt",
     oldData: 'old.json',
-    json: "proposals.json"
+    json: "./build/proposals.json"
   },
   howMany: 96
 }
@@ -66,6 +66,7 @@ async function main() {
     voteStartTime: ""
   }
   fs.writeFileSync(CONFIG.fileName.json, JSON.stringify(json, null, 2));
+  console.log(`written ${CONFIG.howMany} proposals into ${Object.values(CONFIG.fileName)}`);
 }
 
 main();

@@ -83,7 +83,6 @@ const abi = ${JSON.stringify(contract.truffleJson.abi, null, 2)};
 const withParams = (code) => (params) => {
   let codeCopy = code;
   Object.keys(params).forEach((k) => {
-    console.log(k.padEnd(20, ' '), keys[k], params[k]);
     codeCopy = replaceAll(codeCopy, keys[k], params[k]);
   });
   return { 
