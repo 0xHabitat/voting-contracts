@@ -54,7 +54,7 @@ async function main() {
     };
     if (oldData && oldData.proposals && oldData.proposals[i] && oldData.proposals[i].proposalId) {
       elem.title = oldData.proposals[i].title;
-      elem.topics = oldData.proposals[i].topics;
+      elem.topic = oldData.proposals[i].topic;
       elem.proposalId = oldData.proposals[i].proposalId;
       elem.description = oldData.proposals[i].description;
     }
