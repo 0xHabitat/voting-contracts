@@ -44,11 +44,17 @@ async function main() {
     fs.appendFileSync(CONFIG.fileName.yes, proposal.yes.address+"\n");
     fs.appendFileSync(CONFIG.fileName.no, proposal.no.address+"\n");
     const elem = {
-     boothAddress: proposal.booth.address,
+      boothAddress: proposal.booth.address,
       noBoxAddress: proposal.no.address,
       yesBoxAddress: proposal.yes.address
     };
-    const { title, topic, proposalId, description } = (oldData && oldData.proposals && oldData.proposals[i]) || {};
+    let { title, topic, proposalId, description } = (oldData && oldData.proposals && oldData.proposals[i]) || {};
+    if (!proposalId) {
+      title = "";
+      topic = [];
+      proposalId = "";
+      description = "";
+    }
     propJson.push(Object.assign({}, elem, { title, topic, proposalId, description }));
   }
   const json = {
