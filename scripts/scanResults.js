@@ -121,14 +121,14 @@ const getBoxAddress = (tx, voter) => {
 };
 
 const getProposalId = (tx, proposals, voter) => {
-  const boxAddr = getBoxAddress(tx, voter);
-  const { proposalId } = getProposalByBox(proposals, boxAddr) || {};
+  const boxAddress = getBoxAddress(tx, voter);
+  const { proposalId } = getProposalByBox(proposals, boxAddress) || {};
   if (proposalId) {
     return proposalId;
   }
   console.warn(
     'Unknown proposal vote',
-    JSON.stringify({ boxAddr })
+    JSON.stringify({ boxAddress })
   );
 };
 
@@ -139,8 +139,7 @@ const getProposalId = (tx, proposals, voter) => {
   const voters = new Set();
   txs.forEach(t => {
     const tx = Tx.fromRaw(t.raw);
-    const withdrawalTx = isWithdraw(tx);
-    if (isVote(tx) || withdrawalTx) {
+    if (isVote(tx) || isWithdraw(tx)) {
       const voter = tx.inputs[1].signer; // balance card signer
       voters.add(voter);
       const proposalId = getProposalId(tx, proposals, voter);
@@ -148,13 +147,16 @@ const getProposalId = (tx, proposals, voter) => {
         return;
       }
       
-      const proposalVotes = distr[proposalId] = distr[proposalId] || {};
+      if (!distr[proposalId]) {
+        distr[proposalId] = {};
+      }
+      const proposalVotes = distr[proposalId];
 
       let votes = getVotes(tx);
       const prevVote = (proposalVotes[voter] || 0);
       
       // invert withdrawal value for No Box, so it negates nicely when summed up
-      if (prevVote < 0 && withdrawalTx) {
+      if (prevVote < 0 && isWithdraw(tx)) {
         votes = -votes;
       }
       
@@ -179,7 +181,7 @@ const getProposalId = (tx, proposals, voter) => {
   // squash `groupedDistr` with proposal id and dump to CSV
   const distributionByVoteCSV = [`Proposal,Votes,Count`].concat(...groupedDistr.map((v) =>
       Object.entries(v.distr)
-        .sort((a, b) => a[0] - b[0])
+        .sort((a, b) => a[0] - b[0])  
         .map(([votes, count]) => `${v.proposalId},${votes},${count}`)
   ));
   
