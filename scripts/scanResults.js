@@ -91,13 +91,17 @@ const getProposals = async () => {
   return proposals;
 };
 
+// vote is a 4th argument (index 3) to castBallot/withdraw call
 const getVotes = (tx) => {
-  // vote is a 4th argument (index 3) to castBallot/withdraw call
-  const votes = ethers.utils.defaultAbiCoder.decode(
-    booth.functions.castBallot.inputs.map(i => i.type),
-    bufferToHex(tx.inputs[0].msgData.slice(4)) // cut a func sig
-  )[3].div(factor18).toNumber();
-
+  // cut a func sig
+  const msgDataParams = bufferToHex(tx.inputs[0].msgData.slice(4));
+  const paramTypes = booth.functions.castBallot.inputs.map(i => i.type);
+  
+  const params = ethers.utils.defaultAbiCoder.decode(
+    paramTypes,
+    msgDataParams 
+  );
+  const votes = params[3].div(factor18).toNumber();
   return isWithdraw(tx) ? -votes : votes;
 };
 
@@ -153,7 +157,7 @@ const getProposalId = (tx, proposals, voter) => {
       const proposalVotes = distr[proposalId];
 
       let votes = getVotes(tx);
-      const prevVote = (proposalVotes[voter] || 0);
+      const prevVote = proposalVotes[voter] || 0;
       
       // invert withdrawal value for No Box, so it negates nicely when summed up
       if (prevVote < 0 && isWithdraw(tx)) {
