@@ -13,8 +13,8 @@ const proposalData = 'https://www.npoint.io/documents/217ecb17f01746799a3b';
 const proposalsFile = 'build/proposals.json';
 const votesFile = 'build/voteTxs.json';
 const leapNetworkNode = 'https://testnet-node.leapdao.org';
-const startBlock = 88632; // September 8, 2019, 10:39:33 UTC
-const endBlock = 90780; // September 9, 2019, 16:00:41 UTC
+const startBlock = 87632; 
+const endBlock = 91470;
 /** ---------------- */
 
 const factor18 = ethers.utils.bigNumberify(String(10 ** 18));
