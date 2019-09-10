@@ -197,7 +197,9 @@ const getProposalId = (tx, proposals, voter) => {
 
 
   const distributionByVoteCSV = [`Proposal,Votes,Count`].concat(...groupedDistr.map((v) =>
-      Object.entries(v.distr).map(([votes, count]) => `${v.proposalId},${votes},${count}`)
+      Object.entries(v.distr)
+        .sort((a, b) => a[0] - b[0])
+        .map(([votes, count]) => `${v.proposalId},${votes},${count}`)
   ));
   
   fs.writeFileSync(`./build/distributionByVote.csv`, distributionByVoteCSV.join('\n'))
