@@ -137,7 +137,7 @@ const getProposalId = (tx, proposals, voter) => {
   const proposals = await getProposals();
   const distr = {};
   const voters = new Set();
-  const votes = txs.map(t => {
+  txs.forEach(t => {
     const tx = Tx.fromRaw(t.raw);
     const withdrawalTx = isWithdraw(tx);
     if (isVote(tx) || withdrawalTx) {
@@ -160,36 +160,9 @@ const getProposalId = (tx, proposals, voter) => {
       
       // aggregate votes by the voter for the proposal
       proposalVotes[voter] = (proposalVotes[voter] || 0) + votes;
-
-      return { 
-        proposalId, 
-        voter,
-        votes,
-        type: withdrawalTx ? 'w' : 'v'
-      };
     }
     return;
   });
-
-  // prepend votes array with vote 0 for each active voter for each proposal
-  // so once summed up we see 0 votes
-  const votersArr = new Array(...voters);
-  let votesWithDefault = [];
-  proposals.forEach(p => {
-    votesWithDefault = votesWithDefault.concat(
-      votersArr.map(v => ({
-        proposalId: p.proposalId,
-        voter: v,
-        votes: 0,
-        type: 'v'
-      }))
-    );
-  });
-  votesWithDefault = votesWithDefault.concat(votes);  
-  
-  fs.writeFileSync(`./build/rawVotes.csv`, votesWithDefault.filter(v => !!v).map(v => 
-    `${v.proposalId},${v.voter},${v.type},${v.votes}`  
-  ).join('\n'));
 
   // distr is a Map<proposalId: string, Map<voter: address, vote: number>>
   // groupedDistr is a [{ proposalId:string, distr: Map<vote: number, count: number>}]
@@ -212,16 +185,6 @@ const getProposalId = (tx, proposals, voter) => {
   
   fs.writeFileSync(`./build/distributionByVote.csv`, distributionByVoteCSV.join('\n'))
   console.log('Distribution by vote saved to:', './build/distributionByVote.csv');  
-
-  fs.writeFileSync(`./build/distr.json`, JSON.stringify(distr, null, 2));
-
-  const flatDistr = [].concat(...Object.entries(distr).map(([proposalId, votes]) =>
-    Object.entries(votes).map((v) => [proposalId, ...v])
-  ));
-
-  fs.writeFileSync(`./build/distr.csv`, flatDistr.map(v => 
-    `${v[0]},${v[1]},${v[2]}`  
-  ).join('\n'));
 
   console.log("total txs: ", txs.length);
   console.log('voters:', voters.size);
