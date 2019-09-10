@@ -57,6 +57,9 @@ function createTree(orderedLeaves, depth, defaultNodes) {
       if (treeLevel.hasOwnProperty(index)) { // eslint-disable-line no-prototype-builtins
         halfIndex = JSBI.divide(JSBI.BigInt(index, 10), two).toString();
         value = treeLevel[index];
+        if (value == ZERO) {
+          delete treeLevel[index];
+        }
         if (JSBI.__absoluteModSmall(JSBI.BigInt(index, 10), two) === 0) { // eslint-disable-line no-underscore-dangle
           const coIndex = JSBI.add(JSBI.BigInt(index, 10), one).toString();
           if (value == ZERO && !treeLevel[coIndex]) {

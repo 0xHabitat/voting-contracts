@@ -272,4 +272,19 @@ contract('Voting Booth', (accounts) => {
     const tx = await voteContract.consolidate(votes.address, sig.v, sig.r, sig.s).should.be.fulfilled;
   });
 
+  it('test tree', async () => {
+    // this is what we see from local storage
+    const tree1 = new SmtLib(9, {
+      '0': '0x0000000000000000000000000000000000000000000000001bc16d674ec80000',
+      '1': '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '2': '0x0000000000000000000000000000000000000000000000000000000000000000',
+      '3': '0x0000000000000000000000000000000000000000000000000000000000000000'
+    });
+    // this is what the smart contract produces
+    const tree2 = new SmtLib(9, {
+      '0': '0x0000000000000000000000000000000000000000000000001bc16d674ec80000'
+    });
+    assert.equal(tree1.root, tree2.root);
+  });
+
 });
