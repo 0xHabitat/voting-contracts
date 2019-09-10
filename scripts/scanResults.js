@@ -188,7 +188,7 @@ const getProposalId = (tx, proposals, voter) => {
   votesWithDefault = votesWithDefault.concat(votes);  
   
   fs.writeFileSync(`./build/rawVotes.csv`, votesWithDefault.filter(v => !!v).map(v => 
-    `${v.proposalId};${v.voter};${v.type};${v.votes}`  
+    `${v.proposalId},${v.voter},${v.type},${v.votes}`  
   ).join('\n'));
 
   const groupedDistr = Object.entries(distr).map(([proposalId, votes]) => 
@@ -196,8 +196,8 @@ const getProposalId = (tx, proposals, voter) => {
   );
 
 
-  const distributionByVoteCSV = [].concat(...groupedDistr.map((v) =>
-      Object.entries(v.distr).map(([votes, count]) => `${v.proposalId};${votes};${count}`)
+  const distributionByVoteCSV = [`Proposal,Votes,Count`].concat(...groupedDistr.map((v) =>
+      Object.entries(v.distr).map(([votes, count]) => `${v.proposalId},${votes},${count}`)
   ));
   
   fs.writeFileSync(`./build/distributionByVote.csv`, distributionByVoteCSV.join('\n'))
@@ -210,7 +210,7 @@ const getProposalId = (tx, proposals, voter) => {
   ));
 
   fs.writeFileSync(`./build/distr.csv`, flatDistr.map(v => 
-    `${v[0]};${v[1]};${v[2]}`  
+    `${v[0]},${v[1]},${v[2]}`  
   ).join('\n'));
 
   console.log("total txs: ", txs.length);
