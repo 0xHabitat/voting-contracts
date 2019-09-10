@@ -191,10 +191,11 @@ const getProposalId = (tx, proposals, voter) => {
     `${v.proposalId},${v.voter},${v.type},${v.votes}`  
   ).join('\n'));
 
-  const groupedDistr = Object.entries(distr).map(([proposalId, votes]) => 
-    ({ proposalId, distr: countByNumberOfVotes(Object.entries(votes)) })
+  const groupedDistr = Object.keys(distr)
+    .sort()
+    .map((proposalId) => 
+    ({ proposalId, distr: countByNumberOfVotes(Object.entries(distr[proposalId])) })
   );
-
 
   const distributionByVoteCSV = [`Proposal,Votes,Count`].concat(...groupedDistr.map((v) =>
       Object.entries(v.distr)
