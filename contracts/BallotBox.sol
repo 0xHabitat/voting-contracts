@@ -39,16 +39,16 @@ contract BallotBox is SparseMerkleTree {
     bytes32 root = ballotCards.readData(ballotCardId);
     require(root == _getRoot(bytes32(placedVotes), uint16(MOTION_ID), proof), "proof not valid");
 
-    uint256 newAmount;
+    int256 newVotes;
     if (placedVotes < 0) {
       require(!getIsYes(IS_YES), "can only withdraw from no-box if bal < 0");
-      newAmount = uint256(placedVotes * -1);
+      require(int256(removedVotes) * -1 >= placedVotes, "can not withdraw more votes than placed");
+      newVotes = placedVotes + int256(removedVotes);
     } else {
       require(getIsYes(IS_YES), "can only withdraw from yes-box if bal > 0");
-      newAmount = uint256(placedVotes);
+      require(int256(removedVotes) <= placedVotes, "can not withdraw more votes than placed");
+      newVotes = placedVotes - int256(removedVotes);
     }
-    require(removedVotes <= newAmount, "can not withdraw more votes than placed");
-    newAmount = newAmount - removedVotes;
 
     // transfer credits
     IERC20 credits = IERC20(VOICE_CREDITS);
@@ -61,7 +61,7 @@ contract BallotBox is SparseMerkleTree {
     IERC20(VOTES).transfer(TRASH_BOX, removedVotes);
     
     // update ballotCard
-    ballotCards.writeData(ballotCardId, _getRoot(bytes32(newAmount), uint16(MOTION_ID), proof));
+    ballotCards.writeData(ballotCardId, _getRoot(bytes32(newVotes), uint16(MOTION_ID), proof));
 
     // emit event
     emit NewWithdrawal(voter, uint16(MOTION_ID), getIsYes(IS_YES), removedVotes);
