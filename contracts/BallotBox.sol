@@ -25,7 +25,7 @@ contract BallotBox is SparseMerkleTree {
     bool indexed isYes,
     uint256 withdrawnVotes
   );
-  
+
   function withdraw(
     uint256 ballotCardId,
     bytes memory proof,
@@ -59,9 +59,13 @@ contract BallotBox is SparseMerkleTree {
     credits.transfer(voter, returned);
     // transfer votes
     IERC20(VOTES).transfer(TRASH_BOX, removedVotes);
-    
+
     // update ballotCard
-    ballotCards.writeData(ballotCardId, _getRoot(bytes32(newAmount), uint16(MOTION_ID), proof));
+    if (!getIsYes(IS_YES)) {
+      ballotCards.writeData(ballotCardId, _getRoot(bytes32(int256(-newAmount)), uint16(MOTION_ID), proof));
+    } else {
+      ballotCards.writeData(ballotCardId, _getRoot(bytes32(newAmount), uint16(MOTION_ID), proof));
+    }
 
     // emit event
     emit NewWithdrawal(voter, uint16(MOTION_ID), getIsYes(IS_YES), removedVotes);
