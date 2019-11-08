@@ -10,23 +10,20 @@ import "./SparseMerkleTree.sol";
 import "./IERC1948.sol";
 
 contract VotingBooth is SparseMerkleTree {
-  address constant VOICE_CREDITS = 0x1231111111111111111111111111111111111123;
-  address constant VOTES = 0x2341111111111111111111111111111111111234;
+  address constant LEAP_ADDR = 0x1231111111111111111111111111111111111123;
   address constant BALANCE_CARDS = 0x3451111111111111111111111111111111111345;
-  address constant YES_BOX = 0x4561111111111111111111111111111111111456;
-  address constant NO_BOX = 0x5671111111111111111111111111111111111567;
-  uint48 constant MOTION_ID = 0xdeadbeef0001;
   uint256 constant CREDIT_DECIMALS = 1000000000000000000;
 
   event NewVote(
     address indexed voter,
-    uint16 indexed MOTION_ID,
+    bytes32 indexed MOTION_ID,
     bool indexed isYes,
     uint256 placedVotes
   );
   
   function castBallot(
     uint256 balanceCardId,
+    uint256 motionId,
     bytes memory proof,
     int256 placedVotes,
     int256 newVotes
@@ -35,41 +32,25 @@ contract VotingBooth is SparseMerkleTree {
     // read previous votes
     IERC1948 ballotCards = IERC1948(BALANCE_CARDS);
     bytes32 root = ballotCards.readData(balanceCardId);
-    require(root == _getRoot(bytes32(placedVotes), uint16(MOTION_ID), proof), "proof not valid");
+    require(root == _getRoot(bytes32(placedVotes), motionId, proof), "proof not valid");
     if (placedVotes < 0) {
       require(newVotes < placedVotes, "can not decrease no vote");
     } else if (placedVotes > 0) {
       require(newVotes > placedVotes, "can not decrease yes vote");
     }
     require(newVotes != 0, "can not vote 0");
-    address destinationBallot = (newVotes < 0) ? NO_BOX : YES_BOX;
     uint256 diffCredits = uint256((newVotes * newVotes) - (placedVotes * placedVotes)) / CREDIT_DECIMALS;
 
-    // transfer credits
-    IERC20 credits = IERC20(VOICE_CREDITS);
+    // transfer leap
+    IERC20 leap = IERC20(LEAP_ADDR);
     address voter = ballotCards.ownerOf(balanceCardId);
-    credits.transferFrom(voter, destinationBallot, diffCredits);
-    // transfer votes
-    IERC20(VOTES).transfer(destinationBallot, abs(newVotes - placedVotes));
+    leap.transferFrom(voter, voter, diffCredits);
     
     // update ballotCard
-    ballotCards.writeData(balanceCardId, _getRoot(bytes32(newVotes), uint16(MOTION_ID), proof));
+    ballotCards.writeData(balanceCardId, _getRoot(bytes32(newVotes), motionId, proof));
 
     // emit event
-    emit NewVote(voter, uint16(MOTION_ID), newVotes > 0,diffCredits);
+    emit NewVote(voter, bytes32(motionId), newVotes > 0, diffCredits);
   }
 
-  // account used for consolidates.
-  address constant OPERATOR = 0x7891111111111111111111111111111111111789;
-
-  // used to combine multiple contract UTXOs into one.
-  function consolidate(address token, uint8 v, bytes32 r, bytes32 s) public {
-    bool success;
-    address signer;
-    (success, signer) = safer_ecrecover(bytes32(uint256(uint160(address(this)))), v, r, s);
-    require(success == true, "recover failed");
-    require(signer == OPERATOR, "signer does not match");
-    IERC20 erc20 = IERC20(token);
-    erc20.transfer(address(this), erc20.balanceOf(address(this)));
-  }
 }
